@@ -1,14 +1,16 @@
 from flask import Flask, jsonify, request
-from server import add_to_db, get_info, generate_json_text
+from server import add_to_db, get_info, generate_json_text, get_current_price
 from news_api import news_api
 import json
 import psycopg2
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.register_blueprint(news_api)
+CORS(app)
 
 load_dotenv()
 
@@ -64,9 +66,10 @@ def get_prediction_from_database(current_stock):
                     """)
 
         db_gen_info = cur.fetchone()
-        gen_info_dict["outlook"] = db_gen_info[1]
-        gen_info_dict["confidence"] = db_gen_info[2]
-        gen_info_dict["reasoning"] = db_gen_info[3]
+        gen_info_dict["outlook"] = db_gen_info[3]
+        gen_info_dict["confidence"] = db_gen_info[4]
+        gen_info_dict["reasoning"] = db_gen_info[5]
+        gen_info_dict["market_cap"] = db_gen_info[6]
 
         current_information["prices"] = prices_dict
         current_information["info"] = gen_info_dict
@@ -91,6 +94,15 @@ def predictions():
                 current_information = json.loads(json_text)
                 add_to_db(current_stock, current_information, market_cap)
         return get_prediction_from_database(current_stock)
+    except Exception as e:
+        print(f"Error in prediction: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/api/currentinfo", methods = ["GET"])
+def get_current_info():
+    try:
+        current_stock = request.args.get("symbol").lower()
+        return str(get_current_price(current_stock))
     except Exception as e:
         print(f"Error in prediction: {e}")
         return jsonify({"error": str(e)}), 500

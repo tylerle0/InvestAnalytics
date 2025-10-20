@@ -113,3 +113,13 @@ a:hover {
     background-color: #1a1a1a;
   }
 }
+
+@keyframes priceGlow {
+  0% { text-shadow: 0 0 5px rgba(250, 204, 21, 0.6); color: #facc15; }
+  50% { text-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.6); color: white; }
+  100% { text-shadow: 0 0 5px rgba(250, 204, 21, 0); color: white; }
+}
+
+.price-updated {
+  animation: priceGlow 1s ease-out;
+}

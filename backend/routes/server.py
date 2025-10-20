@@ -79,10 +79,16 @@ def add_to_db(current_stock, stock_info, market_cap):
                     USING (true);
                     """)
         
+        ticker = yf.Ticker(current_stock)
+        if "currentPrice" in ticker.info:
+            current_price = ticker.info["currentPrice"]
+        else:
+            current_price = ticker.info["previousClose"]
+        
         cur.execute(f"""
                     INSERT INTO {table_name}_gen_info (last_update, last_close, outlook, price_change, confidence, rationale, market_cap)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """, (datetime.now(timezone.utc), stock_info["historical"][-1]["close"], stock_info["forecast"]["outlook"], stock_info["forecast"]["predictions"][0]["predicted_close"]-stock_info["historical"][-1]["close"], stock_info["forecast"]["confidence"], stock_info["forecast"]["rationale"], market_cap))
+                    """, (datetime.now(timezone.utc), stock_info["historical"][-1]["close"], stock_info["forecast"]["outlook"], ((stock_info["forecast"]["predictions"][0]["predicted_close"]-current_price)/(1.0*current_price))*100, stock_info["forecast"]["confidence"], stock_info["forecast"]["rationale"], market_cap))
 
 
         conn.commit()
@@ -228,6 +234,15 @@ def generate_json_text(current_stock, historical_data, reddit_data, news_data):
     )
     return response.choices[0].message.content
 
+def get_current_price(current_stock: str):
+    try:
+        ticker = yf.Ticker(current_stock)
+        if "currentPrice" in ticker.info:
+            return ticker.info["currentPrice"]
+        else:
+            return ticker.info["previousClose"]
+    except Exception as e:
+        print(f"Error fetching historical data: {e}", flush=True)
 
 
 def get_info(current_stock: str):
@@ -236,7 +251,12 @@ def get_info(current_stock: str):
         ticker = yf.Ticker(current_stock)
         print(ticker)
         current_historical = ticker.history(period="4mo", interval="1wk")
-        market_cap = ticker.info["marketCap"]
+        if "marketCap" in ticker.info:
+            market_cap = ticker.info["marketCap"]
+        elif "market_cap" in ticker.info:
+            market_cap = ticker.info["market_cap"]
+        else:
+            market_cap = ticker.info.get("marketCap", None)
     except Exception as e:
         print(f"Error fetching historical data: {e}", flush=True)
         current_historical = None

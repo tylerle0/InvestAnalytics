@@ -42,6 +42,28 @@ const Watchlist = () => {
     "Getting historical information..."
   );
   const [existanceError, setExistanceError] = useState(false);
+  const cryptoCoins = [
+        'BTC', 'ETH', 'XRP', 'HBAR', 'SOL', 'DOGE', 'ADA'
+    ];
+  const apiBaseURL = import.meta.env.VITE_API_URL;
+
+  const formatMarketCap = (marketCap: number | null | undefined): string => {
+        if (!marketCap || marketCap === 0) return 'N/A';
+
+        const billion = 1_000_000_000;
+        const million = 1_000_000;
+        const trillion = 1_000_000_000_000;
+
+        if (marketCap >= trillion) {
+            return `$${(marketCap / trillion).toFixed(2)}T`;
+        } else if (marketCap >= billion) {
+            return `$${(marketCap / billion).toFixed(2)}B`;
+        } else if (marketCap >= million) {
+            return `$${(marketCap / million).toFixed(2)}M`;
+        } else {
+            return `$${marketCap.toLocaleString()}`;
+        }
+    };
 
   // Array of loading messages
   const addingMessages = [
@@ -99,9 +121,15 @@ const Watchlist = () => {
       const enrichedItems = await Promise.all(
         watchlistData.map(async (item) => {
           try {
+            if(cryptoCoins.includes(item.symbol.toUpperCase()))
+                    item.symbol += "-USD";
             // Make API call to get prediction data
             const response = await fetch(
-              `/api/predictions?symbol=${item.symbol.toUpperCase()}`
+              `${apiBaseURL}/api/predictions?symbol=${item.symbol.toUpperCase()}`
+            );
+
+            const currentPriceResponse = await fetch(
+              `${apiBaseURL}/api/currentinfo?symbol=${item.symbol.toUpperCase()}`
             );
 
             if (!response.ok) {
@@ -117,15 +145,21 @@ const Watchlist = () => {
             }
 
             const apiData = await response.json();
+            const currentPriceInfo = await currentPriceResponse.json()
             console.log(`API data for ${item.symbol}:`, apiData);
 
-            const currentPrice = apiData.info.outlook || 0;
-            const priceChange = apiData.info.reasoning || 0;
+            const currentPrice = currentPriceInfo || 0;
+            const priceChange = apiData.info.outlook || 0;
+            const marketCap = apiData.info.market_cap || 0;
+
+            if(cryptoCoins.includes(item.symbol.toUpperCase().slice(0,-4)))
+              item.symbol = item.symbol.slice(0,-4);
 
             return {
               ...item,
               current_price: currentPrice,
               price_change: priceChange,
+              market_cap: marketCap,
               apiData: apiData,
             };
           } catch (error) {
@@ -349,43 +383,69 @@ const Watchlist = () => {
         </div>
       ) : watchListItems.length > 0 ? (
         <div className="bg-black bg-opacity-100 rounded-2xl p-8 shadow-lg">
-          <div className="grid grid-cols-1 gap-y-10 max-w-10xl mx-auto">
+          <div className="grid grid-cols-1 gap-y-3 max-w-10xl mx-auto">
             {watchListItems.map((item) => (
               <div
                 key={item.id}
                 className="bg-black bg-opacity-80 rounded-xl p-4 shadow-md flex flex-col justify-between"
               >
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold mb-2 text-white">
+                  <a href={"./currencies/" + item.symbol} className="text-xl font-semibold mb-2 text-white">
                     {item.symbol}
-                  </h2>
+                  </a>
                   <button
-                    className="mt-4 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500 transition-all"
+                    className="mt-4 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500 transition-all mt-3"
                     onClick={() => removeFromWatchlist(item.id)}
                   >
                     <img src={trash} alt="Remove" className="w-6 h-7" />
                   </button>
                 </div>
-                <p className="text-white">
-                  Current Price: $
-                  {item.current_price ? item.current_price.toFixed(2) : "N/A"}
-                </p>
-                <p
-                  className={`mt-1 ${
-                    item.price_change > 0
+                <div className="mt-2">
+                  <dl className="grid w-full grid-cols-1 gap-6 text-white sm:grid-cols-3">
+                  
+                  <div>
+                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
+                    Current Price
+                    </dt>
+                    <dd className={`mt-1 text-lg font-semibold ${
+                      item.price_change > 0
+                      ? "text-green-300"
+                      : item.price_change < 0
+                      ? "text-red-300"
+                      : "text-yellow-400"
+                    }`}>
+                    {item.current_price ? `$${item.current_price.toFixed(2)}` : "N/A"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
+                    Outlook
+                    </dt>
+                    <dd
+                    className={`mt-1 text-lg font-semibold ${
+                      item.price_change > 0
                       ? "text-green-400"
                       : item.price_change < 0
                       ? "text-red-400"
                       : "text-yellow-400"
-                  }`}
-                >
-                  Outlook:{" "}
-                  {item.price_change
-                    ? item.price_change > 0
-                      ? `+${item.price_change.toFixed(2)}`
-                      : item.price_change.toFixed(2)
-                    : "N/A"}
-                </p>
+                    }`}
+                    >
+                    {item.price_change
+                      ? `${item.price_change > 0 ? "+" : ""}${item.price_change.toFixed(2)}%`
+                      : "N/A"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
+                    Market Cap
+                    </dt>
+                    <dd className="mt-1 text-lg font-semibold text-white">
+                    {item.market_cap ? formatMarketCap(item.market_cap) : "N/A"}
+                    </dd>
+                  </div>
+                  </dl>
+                </div>
+                <div className="mt-4 border-b border-gray-800" />
               </div>
             ))}
           </div>

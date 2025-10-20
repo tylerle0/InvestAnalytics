@@ -26,6 +26,7 @@ const News = () => {
   const [loading, setLoading] = useState(true);
   const [watchlistItems, setWatchlistItems] = useState<any[]>([]);
   const [loadingWatchlist, setLoadingWatchlist] = useState(true);
+  const apiBaseURL = import.meta.env.VITE_API_URL;
 
   // Fetch user's watchlist
   const fetchWatchlist = async () => {
@@ -62,7 +63,7 @@ const News = () => {
     }
 
     try {
-      const response = await fetch(`/api/news?tickers=${tickers}`);
+      const response = await fetch(`${apiBaseURL}/api/news?tickers=${tickers}`);
       const data = await response.json();
       console.log('News data:', data);
       setArticles(data || []);
@@ -271,7 +272,7 @@ const News = () => {
             <div className="mt-4 inline-flex items-center space-x-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-4 py-2">
               <div className="w-2 h-2 bg-primary-400 rounded-full animate-pulse"></div>
               <span className="text-sm text-primary-300">
-                Showing news for {watchlistItems.length} watchlist item{watchlistItems.length > 1 ? 's' : ''}: {watchlistItems.slice(0, 5).map(item => item.symbol).join(', ')}{watchlistItems.length > 5 ? '...' : ''}
+                Showing news including {watchlistItems.length} watchlist item{watchlistItems.length > 1 ? 's' : ''}: {watchlistItems.slice(0, 5).map(item => item.symbol).join(', ')}{watchlistItems.length > 5 ? '...' : ''}
               </span>
             </div>
           )}
