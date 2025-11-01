@@ -1,0 +1,17 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": "https://rggtmecnfmenfsbrweuv.supabase.co/",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZ3RtZWNuZm1lbmZzYnJ3ZXV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwOTU5NzQsImV4cCI6MjA3MTY3MTk3NH0.BXYIgk6c9fPsuPu9fzoiOY_OggrVFAxlB6VH7OV6oNA",
+    "VITE_API_URL": "https://investanalytics.onrender.com",
+    "VITE_FINNHUB_API_KEY": "d1phvl1r01qu436esb20d1phvl1r01qu436esb2g"
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
