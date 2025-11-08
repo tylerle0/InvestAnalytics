@@ -20,6 +20,8 @@ host=os.getenv("SUPABASE_HOST")
 port=os.getenv("SUPABASE_PORT")
 database=os.getenv("SUPABASE_DB")
 
+flask_port = os.getenv("PORT", 8080)
+
 TOP_STOCKS = {"nvda", "aapl", "amzn"}
 
 def check_if_recent_in_db(current_stock):
@@ -112,4 +114,4 @@ def news():
     return jsonify({"message": "News route"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port = flask_port)
