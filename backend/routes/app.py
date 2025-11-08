@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
-from server import add_to_db, get_info, generate_json_text, get_current_price
-from news_api import news_api
+from routes.server import add_to_db, get_info, generate_json_text, get_current_price
+from routes.news_api import news_api
 import json
 import psycopg2
 import os
@@ -19,6 +19,8 @@ password=os.getenv("SUPABASE_PASS")
 host=os.getenv("SUPABASE_HOST")
 port=os.getenv("SUPABASE_PORT")
 database=os.getenv("SUPABASE_DB")
+
+flask_port = os.getenv("PORT", 8080)
 
 TOP_STOCKS = {"nvda", "aapl", "amzn"}
 
@@ -112,4 +114,4 @@ def news():
     return jsonify({"message": "News route"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port = flask_port)

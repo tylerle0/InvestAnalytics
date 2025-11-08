@@ -1,8 +1,9 @@
 flask
 flask-cors
-psycopg2
+psycopg2-binary
 requests
 yfinance
 praw
 dotenv
 openai
+gunicorn
