@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
-from server import add_to_db, get_info, generate_json_text, get_current_price
-from news_api import news_api
+from routes.server import add_to_db, get_info, generate_json_text, get_current_price
+from routes.news_api import news_api
 import json
 import psycopg2
 import os
