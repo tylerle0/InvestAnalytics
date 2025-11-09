@@ -22,7 +22,7 @@ database=os.getenv("SUPABASE_DB")
 
 flask_port = os.getenv("PORT", 8080)
 
-TOP_STOCKS = {"nvda", "aapl", "amzn"}
+TOP_STOCKS = {"aapl", "googl", "amzn", "nvda", "tsla", "msft", "meta,", "spot"}
 
 def check_if_recent_in_db(current_stock):
     # Sanitize table name by replacing hyphens with underscores
@@ -34,7 +34,7 @@ def check_if_recent_in_db(current_stock):
     found = cur.fetchone()[0] is not None
     if found:
         cur.execute(f"SELECT last_update FROM {table_name}_gen_info")
-        if datetime.now(timezone.utc) - cur.fetchone()[0].replace(tzinfo=timezone.utc) > timedelta(hours=6):
+        if datetime.now(timezone.utc) - cur.fetchone()[0].replace(tzinfo=timezone.utc) > timedelta(hours=9):
             cur.execute(f"DROP TABLE \"{table_name}\", \"{table_name}_gen_info\"")
             conn.commit()
             cur.close()
