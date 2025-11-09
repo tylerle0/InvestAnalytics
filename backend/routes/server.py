@@ -303,7 +303,7 @@ def get_info(current_stock: str):
 
 
 def server_run():
-    popular_stocks = [ "aapl", "googl", "amzn", "nvda", "tsla", "msft", "meta,", "spot"]
+    popular_stocks = [ "btc-usd", "eth-usd", "aapl", "googl", "amzn", "nvda", "tsla", "msft", "meta,", "spot", "nflx", "dis", "ko", "mcd", "v", "jnj", "wmt", "intc", "adbe", "crm"]
     for current_stock in popular_stocks:
         print("working on", current_stock, flush=True)
         historical_data, reddit_data, news_data, market_cap = get_info(current_stock)
