@@ -2,13 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-.headerList{
+.headerList {
   font-family: Arial, Helvetica, sans-serif;
 }
 
 *::-webkit-scrollbar {
   display: none;
 }
+
 * {
   scrollbar-width: none;
   scroll-behavior: smooth;
@@ -35,6 +36,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -42,8 +44,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInLeft {
@@ -51,6 +58,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -97,6 +105,7 @@ a {
   text-decoration: inherit;
   transition: color 0.3s ease;
 }
+
 a:hover {
   color: #ffd700;
 }
@@ -106,20 +115,43 @@ a:hover {
     color: #213547;
     background-color: #0a0a0a;
   }
+
   a:hover {
     color: #ffd700;
   }
+
   button {
     background-color: #1a1a1a;
   }
 }
 
 @keyframes priceGlow {
-  0% { text-shadow: 0 0 5px rgba(250, 204, 21, 0.6); color: #facc15; }
-  50% { text-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.6); color: white; }
-  100% { text-shadow: 0 0 5px rgba(250, 204, 21, 0); color: white; }
+  0% {
+    text-shadow: 0 0 5px rgba(250, 204, 21, 0.6);
+    color: #facc15;
+  }
+
+  50% {
+    text-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.6);
+    color: white;
+  }
+
+  100% {
+    text-shadow: 0 0 5px rgba(250, 204, 21, 0);
+    color: white;
+  }
 }
 
 .price-updated {
   animation: priceGlow 1s ease-out;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-33.333%);
+  }
 }

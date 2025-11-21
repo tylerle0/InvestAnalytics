@@ -1,39 +1,21 @@
 import { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext";
 import { supabase } from "../context/supabaseClient";
-import trash from "../assets/trash-can-icon-white.png";
+import { motion } from "framer-motion";
 
-const backgroundSVG = (
-  <svg
-    className="fixed inset-0 w-full h-full pointer-events-none"
-    style={{ zIndex: -1 }}
-    aria-hidden="true"
-  >
-    <defs>
-      <radialGradient id="glow" cx="50%" cy="50%" r="80%" fx="50%" fy="50%">
-        <stop offset="0%" stopColor="#00ffe7" stopOpacity="0.15" />
-        <stop offset="100%" stopColor="#10131a" stopOpacity="0.7" />
-      </radialGradient>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#glow)" />
-    <g stroke="#00ffe7" strokeOpacity="0.18">
-      <circle cx="8%" cy="20%" r="2.5" fill="#00ffe7" />
-      <circle cx="92%" cy="80%" r="2.5" fill="#00ffe7" />
-      <circle cx="50%" cy="50%" r="3.5" fill="#00ffe7" />
-      <circle cx="30%" cy="70%" r="2" fill="#00ffe7" />
-      <circle cx="70%" cy="30%" r="2" fill="#00ffe7" />
-      <line x1="8%" y1="20%" x2="50%" y2="50%" />
-      <line x1="50%" y1="50%" x2="92%" y2="80%" />
-      <line x1="30%" y1="70%" x2="70%" y2="30%" />
-      <line x1="8%" y1="20%" x2="70%" y2="30%" />
-      <line x1="30%" y1="70%" x2="92%" y2="80%" />
-    </g>
-  </svg>
-);
+interface WatchlistItem {
+  id: number;
+  user_id: string;
+  symbol: string;
+  current_price: number;
+  price_change: number;
+  market_cap?: number;
+  apiData?: any;
+}
 
 const Watchlist = () => {
   const { session } = UserAuth() || {};
-  const [watchListItems, setWatchListItems] = useState([]);
+  const [watchListItems, setWatchListItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [addLoading, setAddLoading] = useState(false);
   const [showAddTicker, setShowAddTicker] = useState(false);
@@ -43,27 +25,27 @@ const Watchlist = () => {
   );
   const [existanceError, setExistanceError] = useState(false);
   const cryptoCoins = [
-        'BTC', 'ETH', 'XRP', 'HBAR', 'SOL', 'DOGE', 'ADA'
-    ];
+    'BTC', 'ETH', 'XRP', 'HBAR', 'SOL', 'DOGE', 'ADA'
+  ];
   const apiBaseURL = import.meta.env.VITE_API_URL;
 
   const formatMarketCap = (marketCap: number | null | undefined): string => {
-        if (!marketCap || marketCap === 0) return 'N/A';
+    if (!marketCap || marketCap === 0) return 'N/A';
 
-        const billion = 1_000_000_000;
-        const million = 1_000_000;
-        const trillion = 1_000_000_000_000;
+    const billion = 1_000_000_000;
+    const million = 1_000_000;
+    const trillion = 1_000_000_000_000;
 
-        if (marketCap >= trillion) {
-            return `$${(marketCap / trillion).toFixed(2)}T`;
-        } else if (marketCap >= billion) {
-            return `$${(marketCap / billion).toFixed(2)}B`;
-        } else if (marketCap >= million) {
-            return `$${(marketCap / million).toFixed(2)}M`;
-        } else {
-            return `$${marketCap.toLocaleString()}`;
-        }
-    };
+    if (marketCap >= trillion) {
+      return `$${(marketCap / trillion).toFixed(2)}T`;
+    } else if (marketCap >= billion) {
+      return `$${(marketCap / billion).toFixed(2)}B`;
+    } else if (marketCap >= million) {
+      return `$${(marketCap / million).toFixed(2)}M`;
+    } else {
+      return `$${marketCap.toLocaleString()}`;
+    }
+  };
 
   // Array of loading messages
   const addingMessages = [
@@ -121,8 +103,8 @@ const Watchlist = () => {
       const enrichedItems = await Promise.all(
         watchlistData.map(async (item) => {
           try {
-            if(cryptoCoins.includes(item.symbol.toUpperCase()))
-                    item.symbol += "-USD";
+            if (cryptoCoins.includes(item.symbol.toUpperCase()))
+              item.symbol += "-USD";
             // Make API call to get prediction data
             const response = await fetch(
               `${apiBaseURL}/api/predictions?symbol=${item.symbol.toUpperCase()}`
@@ -152,8 +134,8 @@ const Watchlist = () => {
             const priceChange = apiData.info.outlook || 0;
             const marketCap = apiData.info.market_cap || 0;
 
-            if(cryptoCoins.includes(item.symbol.toUpperCase().slice(0,-4)))
-              item.symbol = item.symbol.slice(0,-4);
+            if (cryptoCoins.includes(item.symbol.toUpperCase().slice(0, -4)))
+              item.symbol = item.symbol.slice(0, -4);
 
             return {
               ...item,
@@ -175,7 +157,6 @@ const Watchlist = () => {
       );
 
       setWatchListItems(enrichedItems);
-      console.log("Final enriched watchlist items:", enrichedItems);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -239,7 +220,7 @@ const Watchlist = () => {
     fetchWatchlist();
   }, [session]);
 
-  const AddTickerModal = ({ onClose }) => {
+  const AddTickerModal = ({ onClose }: { onClose: () => void }) => {
     const tickers = [
       "Apple (AAPL)",
       "Google (GOOGL)",
@@ -266,20 +247,24 @@ const Watchlist = () => {
     const [tickersData] = useState(tickers);
     const [inputFocus, setInputFocus] = useState(false);
 
-    const handleInputChange = (e) => setSearchTerm(e.target.value);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value);
 
     const tickersDataFiltered = tickersData.filter((ticker) =>
       ticker.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-        <div className="bg-black rounded-lg p-8 shadow-lg max-w-md w-full">
-          <h2 className="text-xl font-bold mb-4 text-white">Add a Ticker</h2>
-          <div className="bg-black shadow-lg rounded max-w-md w-full mx-auto z-50 p-2 max-h-48 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-2xl max-w-md w-full"
+        >
+          <h2 className="text-2xl font-bold mb-6 text-white">Add a Ticker</h2>
+          <div className="relative z-50">
             <input
               autoFocus
-              className="w-full rounded text-base px-4 py-2 bg-gray-900 text-white border border-gray-700 focus:border-yellow-400 transition-all"
+              className="w-full rounded-xl text-base px-4 py-3 bg-black/50 text-white border border-white/10 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all outline-none"
               type="text"
               placeholder="Search stocks/crypto"
               onChange={handleInputChange}
@@ -288,12 +273,12 @@ const Watchlist = () => {
               value={searchTerm}
             />
             {inputFocus && (
-              <div className="bg-black shadow-lg rounded max-w-md w-full mx-auto z-50 p-2 max-h-48 overflow-y-auto">
+              <div className="absolute w-full mt-2 bg-gray-800 border border-white/10 rounded-xl shadow-xl max-h-48 overflow-y-auto z-50">
                 {tickersDataFiltered.length > 0 ? (
                   tickersDataFiltered.map((ticker) => (
-                    <p
+                    <div
                       key={ticker}
-                      className="cursor-pointer hover:bg-yellow-500 px-2 py-1 rounded"
+                      className="cursor-pointer hover:bg-white/10 px-4 py-3 text-gray-300 hover:text-white transition-colors"
                       onClick={() => {
                         setSearchTerm(ticker);
                         setInputFocus(false);
@@ -305,31 +290,33 @@ const Watchlist = () => {
                       }}
                     >
                       {ticker}
-                    </p>
+                    </div>
                   ))
                 ) : (
-                  <p className="text-white px-2 py-1">No results</p>
+                  <div className="px-4 py-3 text-gray-500">No results found</div>
                 )}
               </div>
             )}
           </div>
           {existanceError && (
-            <p className="text-red-500 mb-2">
+            <p className="text-red-400 mt-4 text-sm">
               Ticker already exists in your watchlist.
             </p>
           )}
-          <button
-            className="mt-4 px-4 py-2 rounded bg-cyan-500 text-white"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
+          <div className="mt-8 flex justify-end">
+            <button
+              className="px-6 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+          </div>
+        </motion.div>
       </div>
     );
   };
 
-  const removeFromWatchlist = async (itemId) => {
+  const removeFromWatchlist = async (itemId: number) => {
     if (!session) return;
 
     try {
@@ -351,23 +338,32 @@ const Watchlist = () => {
   };
 
   const authenticatedContent = (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6 mt-20 text-white">
-        Your Watchlist
-      </h1>
+    <div className="container mx-auto py-12 px-4 min-h-screen pt-24">
+      <div className="flex justify-between items-center mb-12">
+        <div>
+          <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
+            Your <span className="bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">Watchlist</span>
+          </h1>
+          <p className="text-gray-400">Track your favorite assets in real-time</p>
+        </div>
+        <button
+          className="px-6 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-lg hover:shadow-primary-500/25 transition-all transform hover:scale-105"
+          onClick={() => setShowAddTicker(true)}
+        >
+          + Add Ticker
+        </button>
+      </div>
 
       {/* Show adding ticker loading overlay (takes priority) */}
       {addLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-xl p-8 shadow-lg">
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mb-4"></div>
-              <div className="text-cyan-400 text-lg font-medium animate-pulse">
-                {addLoadingText}
-              </div>
-              <div className="text-gray-400 text-sm mt-2">
-                Adding ticker to your watchlist...
-              </div>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mx-auto mb-4"></div>
+            <div className="text-primary-400 text-lg font-medium animate-pulse">
+              {addLoadingText}
+            </div>
+            <div className="text-gray-400 text-sm mt-2">
+              Adding ticker to your watchlist...
             </div>
           </div>
         </div>
@@ -375,119 +371,100 @@ const Watchlist = () => {
 
       {/* Only show regular loading when NOT adding a ticker */}
       {loading && !addLoading ? (
-        <div className="flex flex-col items-center justify-center min-h-[200px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mb-4"></div>
-          <div className="text-cyan-400 text-lg font-medium animate-pulse">
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-400 mb-4"></div>
+          <div className="text-primary-400 text-lg font-medium animate-pulse">
             {loadingText}
           </div>
         </div>
       ) : watchListItems.length > 0 ? (
-        <div className="bg-black bg-opacity-100 rounded-2xl p-8 shadow-lg">
-          <div className="grid grid-cols-1 gap-y-3 max-w-10xl mx-auto">
-            {watchListItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-black bg-opacity-80 rounded-xl p-4 shadow-md flex flex-col justify-between"
-              >
-                <div className="flex justify-between items-center">
-                  <a href={"./currencies/" + item.symbol} className="text-xl font-semibold mb-2 text-white">
-                    {item.symbol}
+        <div className="grid grid-cols-1 gap-6">
+          {watchListItems.map((item, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              key={item.id}
+              className="group bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-primary-500/30 transition-all duration-300"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-2">
+                    <a href={"./currencies/" + item.symbol} className="text-2xl font-bold text-white hover:text-primary-400 transition-colors">
+                      {item.symbol}
+                    </a>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.price_change > 0
+                      ? "bg-green-500/20 text-green-400 border border-green-500/20"
+                      : item.price_change < 0
+                        ? "bg-red-500/20 text-red-400 border border-red-500/20"
+                        : "bg-gray-500/20 text-gray-400 border border-gray-500/20"
+                      }`}>
+                      {item.price_change > 0 ? "BULLISH" : item.price_change < 0 ? "BEARISH" : "NEUTRAL"}
+                    </span>
+                  </div>
+                  <div className="flex gap-8 text-sm">
+                    <div>
+                      <span className="text-gray-500 block mb-1">Current Price</span>
+                      <span className="text-xl font-mono text-white">
+                        {item.current_price ? `$${item.current_price.toFixed(2)}` : "N/A"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block mb-1">Outlook</span>
+                      <span className={`text-xl font-mono ${item.price_change > 0 ? "text-green-400" : item.price_change < 0 ? "text-red-400" : "text-gray-400"
+                        }`}>
+                        {item.price_change
+                          ? `${item.price_change > 0 ? "+" : ""}${item.price_change.toFixed(2)}%`
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className="hidden sm:block">
+                      <span className="text-gray-500 block mb-1">Market Cap</span>
+                      <span className="text-xl font-mono text-white">
+                        {item.market_cap ? formatMarketCap(item.market_cap) : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <a
+                    href={"./currencies/" + item.symbol}
+                    className="flex-1 md:flex-none px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-bold transition-all border border-white/10 text-center"
+                  >
+                    View Details
                   </a>
                   <button
-                    className="mt-4 px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500 transition-all mt-3"
+                    className="p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
                     onClick={() => removeFromWatchlist(item.id)}
+                    title="Remove from watchlist"
                   >
-                    <img src={trash} alt="Remove" className="w-6 h-7" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
-                <div className="mt-2">
-                  <dl className="grid w-full grid-cols-1 gap-6 text-white sm:grid-cols-3">
-                  
-                  <div>
-                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
-                    Current Price
-                    </dt>
-                    <dd className={`mt-1 text-lg font-semibold ${
-                      item.price_change > 0
-                      ? "text-green-300"
-                      : item.price_change < 0
-                      ? "text-red-300"
-                      : "text-yellow-400"
-                    }`}>
-                    {item.current_price ? `$${item.current_price.toFixed(2)}` : "N/A"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
-                    Outlook
-                    </dt>
-                    <dd
-                    className={`mt-1 text-lg font-semibold ${
-                      item.price_change > 0
-                      ? "text-green-400"
-                      : item.price_change < 0
-                      ? "text-red-400"
-                      : "text-yellow-400"
-                    }`}
-                    >
-                    {item.price_change
-                      ? `${item.price_change > 0 ? "+" : ""}${item.price_change.toFixed(2)}%`
-                      : "N/A"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-400 uppercase tracking-wide">
-                    Market Cap
-                    </dt>
-                    <dd className="mt-1 text-lg font-semibold text-white">
-                    {item.market_cap ? formatMarketCap(item.market_cap) : "N/A"}
-                    </dd>
-                  </div>
-                  </dl>
-                </div>
-                <div className="mt-4 border-b border-gray-800" />
               </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-8">
-            <button
-              className="px-6 py-3 rounded-lg text-sm font-semibold bg-cyan-500 text-black hover:bg-cyan-400 transition-all"
-              onClick={() => setShowAddTicker(true)}
-            >
-              Add Ticker
-            </button>
-          </div>
+            </motion.div>
+          ))}
         </div>
       ) : (
-        <div className="bg-black bg-opacity-100 rounded-xl p-8">
-          <div className="grid grid-cols-1 gap-6">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="rounded-xl p-6 shadow-md bg-gray-1000"
-                style={{ opacity: 0.8 - i * 0.25 }}
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <div className="h-6 w-24 bg-gray-600 rounded"></div>
-                  <div className="h-10 w-14 bg-gray-600 rounded-md"></div>
-                </div>
-                <div>
-                  <div className="h-4 w-32 bg-gray-600 rounded mb-2"></div>
-                  <div className="h-4 w-20 bg-gray-600 rounded"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-            <p className="text-white mb-4">
-              Your watchlist is empty. Add some stocks or cryptocurrencies to
-              track!
+        <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-12 text-center">
+          <div className="max-w-md mx-auto">
+            <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">Your watchlist is empty</h3>
+            <p className="text-gray-400 mb-8">
+              Start tracking your favorite stocks and cryptocurrencies to get real-time updates and AI predictions.
             </p>
             <button
-              className="px-6 py-3 rounded-lg text-sm font-semibold bg-cyan-500 text-black hover:bg-cyan-400 transition-all"
+              className="px-8 py-4 rounded-xl text-lg font-bold bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-lg hover:shadow-primary-500/25 transition-all transform hover:scale-105"
               onClick={() => setShowAddTicker(true)}
             >
-              Add Ticker
+              Add Your First Ticker
             </button>
           </div>
         </div>
@@ -506,23 +483,31 @@ const Watchlist = () => {
   );
 
   const unauthenticatedContent = (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="bg-black bg-opacity-80 rounded-xl shadow-lg p-8 text-white max-w-2xl w-full z-10">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          Create your own personalized watchlist with your InvestAnalytics
-          account now!
+    <div className="flex items-center justify-center min-h-screen px-4">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12 text-center max-w-2xl w-full shadow-2xl">
+        <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+          <svg className="w-10 h-10 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h1 className="text-3xl lg:text-4xl font-bold mb-6 text-white">
+          Unlock Your <span className="text-primary-400">Personalized</span> Watchlist
         </h1>
-        <p className="text-center mb-4">
-          Through our AI-powered prediction services, a watchlist with
-          InvestAnalytics will allow you to view the prices of stocks and
-          currencies that are important to you.{" "}
+        <p className="text-xl text-gray-400 mb-10 leading-relaxed">
+          Join InvestAnalytics to track your favorite assets, get AI-powered predictions, and receive real-time market updates.
         </p>
-        <div className="flex justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            className="block px-6 py-3 rounded-lg text-sm font-semibold border border-[#00FFFF] text-[#00FFFF] shadow-md transition-all duration-300 hover:bg-[#00FFFF] hover:text-black hover:shadow-[0_0_20px_rgba(0,188,212,0.5)]"
+            className="px-8 py-4 rounded-xl text-lg font-bold bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-lg hover:shadow-primary-500/25 transition-all transform hover:scale-105"
             href="/signin"
           >
             Sign In Now
+          </a>
+          <a
+            className="px-8 py-4 rounded-xl text-lg font-bold bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all"
+            href="/signup"
+          >
+            Create Account
           </a>
         </div>
       </div>
@@ -530,10 +515,17 @@ const Watchlist = () => {
   );
 
   return (
-    <>
-      {backgroundSVG}
-      {session ? authenticatedContent : unauthenticatedContent}
-    </>
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,231,0.05),transparent_50%)]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-10" />
+      </div>
+
+      <div className="relative z-10">
+        {session ? authenticatedContent : unauthenticatedContent}
+      </div>
+    </div>
   );
 };
 
