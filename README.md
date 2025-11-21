@@ -1,6 +1,6 @@
 # **InvestAnalytics**
 
-## Deploymed on
+## Deployed on
 - [investanalytics.vercel.app](investanalytics.vercel.app)
 
 ## Preqreqs for contribution
