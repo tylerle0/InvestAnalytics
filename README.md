@@ -1,7 +1,7 @@
 # **InvestAnalytics**
 
 ## Deployed on
-- [investanalytics.vercel.app](investanalytics.vercel.app)
+- [invest-analytics.vercel.app](invest-analytics.vercel.app)
 
 ## Preqreqs for contribution
 - Node.js (v18 or higher)
